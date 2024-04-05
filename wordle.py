@@ -1,7 +1,7 @@
 import word_lists
 import random
 
-solution = random.choice(word_lists.SOLUTION_LIST)
+solution = random.choice(word_lists.WORD_LIST)
 
 
 def guess():
