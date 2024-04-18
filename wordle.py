@@ -1,7 +1,7 @@
 import word_lists
 import random
 
-solution = random.choice(word_lists.WORD_LIST)
+solution = random.choice(word_lists.SOLUTION_LIST)
 
 
 def guess():
@@ -14,10 +14,10 @@ def check(guess_input):
         print("that word is not 5 letters long, try again")
         return "invalid"
 
-    for word in range(len(word_lists.WORD_LIST)):
-        if guess_input == word_lists.WORD_LIST[word]:
-            print("Valid word")
-            return guess_input
+    with open("words.txt", "r") as file:
+        for line in file:
+            if guess_input in line:
+                return guess_input
 
     print("That word is not valid")
     return "invalid"

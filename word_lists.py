@@ -1,4 +1,4 @@
-WORD_LIST = [
+SOLUTION_LIST = [
     "aback", "abase", "abate", "abbey", "abbot", "abhor", "abide", "abled", "abode", "abort", 
     "about", "above", "abuse", "abyss", "acorn", "acrid", "actor", "acute", "adage", "adapt", 
     "adept", "admin", "admit", "adobe", "adopt", "adore", "adorn", "adult", "affix", "afire", 
@@ -231,3 +231,4 @@ WORD_LIST = [
     "wrist", "write", "wrong", "wrote", "wrung", "wryly", "yacht", "yearn", "yeast", "yield", 
     "young", "youth", "zebra", "zesty", "zonal"
 ]
+
