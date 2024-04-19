@@ -35,18 +35,34 @@ def sol_check(guess_input):
             if solution[y] == guess_input[x]:
                 if letters[x] == "":
                     letters[x] = "yellow"
+                    break
+                elif letters[x] == "green":
+                    break
+
+    if letters == ["green", "green", "green", "green", "green"]:
+        return "win"
     
     return letters
 
+game_over = False
 
 for x in range(6):
-    while True:
-        user_input = check(guess())
-        if user_input == "invalid":
-            continue
-        else:
-            print(sol_check(user_input))
-            break
+    if game_over:
+        break
+    else:
+        while True:
+            user_input = check(guess())
+            
+            if user_input == "invalid":
+                continue
+            else:
+                if sol_check(user_input) == "win":
+                    print(f"You won in {x + 1} guesses!")
+                    game_over = True
+                else:
+                    print(sol_check(user_input))
+
+                break
 
 
 
