@@ -18,21 +18,28 @@ YELLOW = (181, 159, 59)
 GREY = (58, 58, 60)
 LIGHTGREY = (129, 131, 132)
 
-solution = random.choice(word_lists.SOLUTION_LIST)
+solution = random.choice(word_lists.SOLUTION_LIST).upper()
 
 board = []
 typed = []
 
 class Square:
-    def __init__(self, name, x, y, has_text=False):
+    def __init__(self, name, x, y, value="empty"):
         self.name = name
         self.x = (50 * x) + (30 * x) + 125
         self.y = (50 * y) + (30 * y) - 50
-        self.has_text = has_text
+        self.value = value
         
     def draw_square(self):
-        pygame.draw.rect(SCREEN, LIGHTGREY, (self.x - 1, self.y - 1, 72, 72))
-        pygame.draw.rect(SCREEN, BACKGROUND, (self.x, self.y, 70, 70))
+        if self.value == "empty":
+            pygame.draw.rect(SCREEN, LIGHTGREY, (self.x - 1, self.y - 1, 72, 72))
+            pygame.draw.rect(SCREEN, BACKGROUND, (self.x, self.y, 70, 70))
+        elif self.value == "green":
+            pygame.draw.rect(SCREEN, GREEN, (self.x, self.y, 70, 70))
+        elif self.value == "yellow":
+            pygame.draw.rect(SCREEN, YELLOW, (self.x, self.y, 70, 70))
+        elif self.value == "grey":
+            pygame.draw.rect(SCREEN, GREY, (self.x, self.y, 70, 70))
         
     def draw_text(self, text):
         draw_text(SCREEN, text, WHITE, self.x + 35, self.y + 35, 44)
@@ -47,12 +54,14 @@ def init_board(letters, guesses):
         for guess in range(guesses):
             object_name = f"square{letter + 1}{guess + 1}"
             board[guess][letter] = Square(object_name, letter + 1, guess + 1)
-            
+    
+               
+def update_board():
     for x, row in enumerate(board):
         for y, obj in enumerate(row):
             obj.draw_square()
             obj.draw_text(typed[x][y])
-    
+               
                     
 def draw_rounded_rect(surface, color, rect, radius):
     x, y, w, h = rect
@@ -74,42 +83,41 @@ def draw_text(surface, text, color, x, y, font_size):
     y -= text_height / 2
     
     surface.blit(text_surface, (x, y))
-    
-
-def guess():
-    guess_input = input("guess a 5 letter word: ")
-    return guess_input
 
 
-def check(guess_input):
-    if len(guess_input) != 5:
-        print("that word is not 5 letters long, try again")
-        return "invalid"
-
-    with open("words.txt", "r") as file:
-        for line in file:
-            if guess_input in line:
-                return guess_input
-
-    print("That word is not valid")
-    return "invalid"
-
-
-def sol_check(guess_input):
+def check(guess_input, guess_number):
     letters = ["", "", "", "", ""]
-
+    
     for x in range(5):
         if solution[x] == guess_input[x]:
-            letters[x] = "green"
-
+            for y, row in enumerate(board):
+                for z, obj in enumerate(row):
+                    if y == guess_number:
+                        if z == x:
+                            obj.value = "green"
+                            letters[x] = "green"
+                    
     for x in range(5):
         for y in range(5):
             if solution[y] == guess_input[x]:
                 if letters[x] == "":
-                    letters[x] = "yellow"
+                    for y, row in enumerate(board):
+                        for z, obj in enumerate(row):
+                            if y == guess_number:
+                                if z == x:
+                                    obj.value = "yellow"
+                                    letters[x] = "yellow"
                     break
                 elif letters[x] == "green":
                     break
+    
+    for x in range(5):
+        if letters[x] == "":
+            for y, row in enumerate(board):
+                for z, obj in enumerate(row):
+                    if y == guess_number:
+                        if z == x:
+                            obj.value = "grey"
 
     if letters == ["green", "green", "green", "green", "green"]:
         return "win"
@@ -117,32 +125,12 @@ def sol_check(guess_input):
     return letters
 
 
-def level():
-    level_over = False
-    
-    for x in range(6):
-        if level_over:
-            break
-        else:
-            while True:
-                user_input = check(guess())
-            
-                if user_input == "invalid":
-                    continue
-                else:
-                    if sol_check(user_input) == "win":
-                        print(f"You won in {x + 1} guesses!")
-                        level_over = True
-                    else:
-                        print(sol_check(user_input))
-
-                    break
-
-
 def main():
     global board, typed
     
     typed = [[None for x in range(5)] for x in range(6)]
+    guess_number = 0
+    init_board(5, 6)
     
     while True:
         SCREEN.fill(BACKGROUND)
@@ -153,19 +141,54 @@ def main():
                 pygame.quit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_BACKSPACE:
-                    continue
-                else:
                     found = False
+                    atrow = ""
+                    atcol = ""
                     for x, row in enumerate(typed):
                         for y, element in enumerate(row):
                             if element is None:
-                                typed[x][y] = event.unicode.capitalize()
+                                atrow = x
+                                atcol = y
                                 found = True
                                 break
                         if found:
                             break
+                    if atcol != 0:
+                        typed[atrow][atcol - 1] = None
+                    elif atrow != 0:
+                        if atrow > guess_number:
+                            typed[atrow - 1][4] = None
+                
+                elif event.key == pygame.K_RETURN:
+                    valid = True
+                    guess_input = ""
+                    for element in typed[guess_number]:
+                        if element is None:
+                            valid = False
+                            break
+                        else:
+                            guess_input += element
+                    if valid:
+                        with open("words.txt", "r") as file:
+                            for line in file:
+                                if guess_input in line.upper():
+                                    check(guess_input, guess_number)
+                                    guess_number += 1
+      
+                else:
+                    if event.unicode.isalpha():
+                        found = False
+                        for x, row in enumerate(typed):
+                            for y, element in enumerate(row):
+                                if element is None:
+                                    if x == guess_number:
+                                        typed[x][y] = event.unicode.capitalize()
+                                    found = True
+                                    break
+                            if found:
+                                break
         
-        init_board(5, 6)
+        update_board()
         
         pygame.display.flip()
 
